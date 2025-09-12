@@ -17,7 +17,6 @@
 package org.wildfly.security.authz.jacc;
 
 import java.security.Principal;
-import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +24,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.wildfly.security.auth.principal.NamedGroup;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.authz.Roles;
 
@@ -41,21 +41,21 @@ class RoleToGroupMapper {
         Collection<Principal> principals = new ArrayList<>();
 
         // add the 'Roles' group to the subject containing the identity's mapped roles.
-        Group rolesGroup = new SimpleGroup("Roles");
+        SimpleGroup rolesGroup = new SimpleGroup("Roles");
         for (String role : roles) {
             rolesGroup.addMember(new NamePrincipal(role));
         }
         principals.add(rolesGroup);
 
         // add a 'CallerPrincipal' group containing the identity's principal.
-        Group callerPrincipalGroup = new SimpleGroup("CallerPrincipal");
+        SimpleGroup callerPrincipalGroup = new SimpleGroup("CallerPrincipal");
         callerPrincipalGroup.addMember(caller);
         principals.add(callerPrincipalGroup);
 
         return principals;
     }
 
-    private static class SimpleGroup implements Group {
+    private static class SimpleGroup implements NamedGroup {
 
         private final String name;
 
@@ -71,14 +71,8 @@ class RoleToGroupMapper {
             return this.name;
         }
 
-        @Override
-        public boolean addMember(Principal principal) {
+        boolean addMember(Principal principal) {
             return this.principals.add(principal);
-        }
-
-        @Override
-        public boolean removeMember(Principal principal) {
-            return this.principals.remove(principal);
         }
 
         @Override
